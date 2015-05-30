@@ -1,0 +1,13 @@
+{application, statman_kinesis,
+ [
+  {description, ""},
+  {vsn, "0.1"},
+  {registered, []},
+  {applications, [
+                  kernel,
+                  stdlib,
+                  statman
+                 ]},
+  {mod, {statman_kinesis_app, []}},
+  {env, []}
+ ]}.
