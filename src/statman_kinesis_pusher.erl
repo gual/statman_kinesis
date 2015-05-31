@@ -57,11 +57,12 @@ handle_info({timeout, Timer, {push, Interval}}, #state{timer = Timer, prefix = P
     NewTimer = erlang:start_timer(Interval, self(), {push, Interval}),
     {ok, Metrics} = statman_aggregator:get_window(Interval div 1000),
     Filtered = lists:filtermap(State#state.filtermapper, Metrics),
-    Serialized = serialize_metrics(Prefix, Filtered),
+    BinaryMetrics = list_to_binary(serialize_metrics(Prefix, Filtered)),
+    BinaryStream = list_to_binary(Stream),
 
-    Payload = [{<<"Data">>, base64:encode(Serialized)},
+    Payload = [{<<"Data">>, base64:encode(BinaryMetrics)},
                {<<"PartitionKey">>, base64:encode(Prefix)},
-               {<<"StreamName">>, <<Stream>>}],
+               {<<"StreamName">>, BinaryStream}],
 
     Result = kinetic:put_record(Payload),
 
