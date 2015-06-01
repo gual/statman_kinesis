@@ -13,7 +13,7 @@
          terminate/2,
          code_change/3]).
 
--record(state, {timer, prefix, stream, filtermapper}).
+-record(state, {timer, prefix, stream, key, filtermapper}).
 
 %%%===================================================================
 %%% API
@@ -29,6 +29,7 @@ start_link() ->
 init([]) ->
     Interval = application:get_env(statman_kinesis, interval, 60000),
     Prefix = application:get_env(statman_kinesis, prefix, undefined),
+    Key = application:get_env(statman_kinesis, key, undefined),
     {ok, Stream} = application:get_env(statman_kinesis, stream),
     Filtermapper = case application:get_env(statman_kinesis, filtermapper) of
                        {ok, {M, F}} ->
@@ -42,6 +43,7 @@ init([]) ->
     {ok, #state{timer = Timer,
                 prefix = Prefix,
                 stream = Stream,
+                key = Key,
                 filtermapper = Filtermapper}}.
 
 
@@ -53,20 +55,21 @@ handle_cast(_Msg, State) ->
     {noreply, State}.
 
 
-handle_info({timeout, Timer, {push, Interval}}, #state{timer = Timer, prefix = Prefix, stream = Stream} = State) ->
+handle_info({timeout, Timer, {push, Interval}}, #state{timer = Timer, prefix = Prefix, stream = Stream, key = Key} = State) ->
     NewTimer = erlang:start_timer(Interval, self(), {push, Interval}),
     {ok, Metrics} = statman_aggregator:get_window(Interval div 1000),
     Filtered = lists:filtermap(State#state.filtermapper, Metrics),
     BinaryMetrics = list_to_binary(serialize_metrics(Prefix, Filtered)),
     BinaryStream = list_to_binary(Stream),
 
+
     Payload = [{<<"Data">>, base64:encode(BinaryMetrics)},
-               {<<"PartitionKey">>, base64:encode(Prefix)},
+               {<<"PartitionKey">>, base64:encode(binary_key(Key))},
                {<<"StreamName">>, BinaryStream}],
 
     Result = kinetic:put_record(Payload),
 
-    % error_logger:info_msg("statman_kinesis result: ~p~n", [Result]),
+    error_logger:info_msg("statman_kinesis result: ~p~n", [Result]),
     
     {noreply, State#state{timer = NewTimer}};
 
@@ -118,6 +121,12 @@ binary_prefix(undefined) ->
     <<>>;
 binary_prefix(B) when is_binary(B) ->
     <<B/binary, $.>>.
+
+binary_key(undefined) ->
+    crypto:rand_bytes(4);
+binary_key(B) when is_binary(B) ->
+    B.
+
 
 format_counter(Metric) ->
     Name = format_key(proplists:get_value(key, Metric)),

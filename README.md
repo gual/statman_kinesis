@@ -4,7 +4,7 @@ This library pushes your metrics collected with [statman](https://github.com/knu
 
 For statman histograms only the percentiles are pushed as data points.
 
-It is based on [statman_graphite](https://github.com/chrisavl/statman_graphite)
+It is based on [statman_graphite](https://github.com/chrisavl/statman_graphite).
 
 ## Using it
 
@@ -20,7 +20,10 @@ record_some_statman_stats().
 ```
 
 You can use the `prefix` application variable to set a global prefix that will
-be prepended to all metrics before they are send to Kinesis.
+be prepended to all metrics before they are send to Kinesis. 
+
+The `key` application variable can also be set, and will be used as partition key 
+for the stream, if it's not set then a random 4-byte key will be used every time.
 
 ```erlang
 application:set_env(statman_kinesis, prefix, <<"my-api-key">>).
