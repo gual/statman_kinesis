@@ -69,7 +69,7 @@ handle_info({timeout, Timer, {push, Interval}}, #state{timer = Timer, prefix = P
 
     Result = kinetic:put_record(Payload),
 
-    error_logger:info_msg("statman_kinesis result: ~p~n", [Result]),
+    % error_logger:info_msg("statman_kinesis result: ~p~n", [Result]),
     
     {noreply, State#state{timer = NewTimer}};
 

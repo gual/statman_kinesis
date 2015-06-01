@@ -22,13 +22,13 @@ record_some_statman_stats().
 You can use the `prefix` application variable to set a global prefix that will
 be prepended to all metrics before they are send to Kinesis. 
 
-The `key` application variable can also be set, and will be used as partition key 
-for the stream, if it's not set then a random 4-byte key will be used every time.
-
 ```erlang
 application:set_env(statman_kinesis, prefix, <<"my-api-key">>).
 application:set_env(statman_kinesis, prefix, <<"my-api-key.", (list_to_binary(atom_to_list(node())))/binary>>).
 ```
+
+The `key` application variable can also be set, and will be used as partition key 
+for the stream, if it's not set then a random 4-byte key will be used every time.
 
 ### Filtering/rewriting
 
