@@ -67,9 +67,7 @@ handle_info({timeout, Timer, {push, Interval}}, #state{timer = Timer, prefix = P
                {<<"PartitionKey">>, base64:encode(binary_key(Key))},
                {<<"StreamName">>, BinaryStream}],
 
-    Result = kinetic:put_record(Payload),
-
-    % error_logger:info_msg("statman_kinesis result: ~p~n", [Result]),
+    kinetic:put_record(Payload),
     
     {noreply, State#state{timer = NewTimer}};
 
