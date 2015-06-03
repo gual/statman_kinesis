@@ -7,7 +7,7 @@
                   kernel,
                   stdlib,
                   statman,
-                  kinesis
+                  kinetic
                  ]},
   {mod, {statman_kinesis_app, []}},
   {env, []}
