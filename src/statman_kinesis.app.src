@@ -6,7 +6,8 @@
   {applications, [
                   kernel,
                   stdlib,
-                  statman
+                  statman,
+                  kinesis
                  ]},
   {mod, {statman_kinesis_app, []}},
   {env, []}
