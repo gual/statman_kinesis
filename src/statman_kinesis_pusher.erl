@@ -62,12 +62,15 @@ handle_info({timeout, Timer, {push, Interval}}, #state{timer = Timer, prefix = P
     BinaryMetrics = list_to_binary(serialize_metrics(Prefix, Filtered)),
     BinaryStream = list_to_binary(Stream),
 
-
     Payload = [{<<"Data">>, base64:encode(BinaryMetrics)},
                {<<"PartitionKey">>, base64:encode(binary_key(Key))},
                {<<"StreamName">>, BinaryStream}],
 
-    kinetic:put_record(Payload),
+    try kinetic:put_record(Payload) of
+      _ -> ok
+    catch
+      _:_ -> error_logger:info_msg("statman_kinesis: record could not be saved. ~n")
+    end,
     
     {noreply, State#state{timer = NewTimer}};
 
